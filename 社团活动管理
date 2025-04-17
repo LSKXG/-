@@ -1,0 +1,199 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+// 用户类
+class User {
+    private String username;
+    private String password;
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+}
+
+// 活动类
+class Activity {
+    private String theme;
+    private String time;
+    private String location;
+    private String plan;
+    private boolean isApproved;
+
+    public Activity(String theme, String time, String location, String plan) {
+        this.theme = theme;
+        this.time = time;
+        this.location = location;
+        this.plan = plan;
+        this.isApproved = false;
+    }
+
+    public String getTheme() {
+        return theme;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public String getPlan() {
+        return plan;
+    }
+
+    public boolean isApproved() {
+        return isApproved;
+    }
+
+    public void approve() {
+        this.isApproved = true;
+    }
+}
+
+// 活动管理系统类
+class ActivityManagementSystem {
+    private Map<String, User> users;
+    private List<Activity> activities;
+    private Map<Activity, List<String>> signIns;
+    private Map<Activity, List<String>> evaluations;
+    private Map<Activity, String> summaries;
+
+    public ActivityManagementSystem() {
+        this.users = new HashMap<>();
+        this.activities = new ArrayList<>();
+        this.signIns = new HashMap<>();
+        this.evaluations = new HashMap<>();
+        this.summaries = new HashMap<>();
+    }
+
+    // 用户注册
+    public void registerUser(String username, String password) {
+        users.put(username, new User(username, password));
+    }
+
+    // 用户登录
+    public boolean login(String username, String password) {
+        User user = users.get(username);
+        return user != null && user.getPassword().equals(password);
+    }
+
+    // 创建活动
+    public Activity createActivity(String username, String theme, String time, String location, String plan) {
+        if (login(username, users.get(username).getPassword())) {
+            Activity activity = new Activity(theme, time, location, plan);
+            activities.add(activity);
+            return activity;
+        }
+        return null;
+    }
+
+    // 活动审核
+    public void approveActivity(Activity activity) {
+        activity.approve();
+    }
+
+    // 活动报名
+    public boolean signUp(String username, Activity activity) {
+        if (login(username, users.get(username).getPassword()) && activity.isApproved()) {
+            // 模拟报名信息填写
+            return true;
+        }
+        return false;
+    }
+
+    // 活动签到
+    public void signIn(Activity activity, String username) {
+        if (!signIns.containsKey(activity)) {
+            signIns.put(activity, new ArrayList<>());
+        }
+        signIns.get(activity).add(username);
+    }
+
+    // 活动评价
+    public void evaluateActivity(Activity activity, String username, String evaluation) {
+        if (!evaluations.containsKey(activity)) {
+            evaluations.put(activity, new ArrayList<>());
+        }
+        evaluations.get(activity).add(evaluation);
+    }
+
+    // 活动总结
+    public void summarizeActivity(Activity activity, String username, String summary) {
+        if (login(username, users.get(username).getPassword())) {
+            summaries.put(activity, summary);
+        }
+    }
+
+    // 获取活动列表
+    public List<Activity> getActivities() {
+        return activities;
+    }
+
+    // 获取活动签到信息
+    public List<String> getSignIns(Activity activity) {
+        return signIns.getOrDefault(activity, new ArrayList<>());
+    }
+
+    // 获取活动评价信息
+    public List<String> getEvaluations(Activity activity) {
+        return evaluations.getOrDefault(activity, new ArrayList<>());
+    }
+
+    // 获取活动总结信息
+    public String getSummary(Activity activity) {
+        return summaries.getOrDefault(activity, "");
+    }
+}
+
+// 主类，用于测试
+public class Main {
+    public static void main(String[] args) {
+        ActivityManagementSystem system = new ActivityManagementSystem();
+
+        // 注册用户
+        system.registerUser("clubLeader", "123456");
+        system.registerUser("student1", "123456");
+
+        // 社团负责人创建活动
+        Activity activity = system.createActivity("clubLeader", "社团活动", "2025-04-20", "学校礼堂", "活动详细方案");
+
+        // 活动审核
+        system.approveActivity(activity);
+
+        // 学生报名活动
+        boolean signedUp = system.signUp("student1", activity);
+        System.out.println("学生报名结果: " + (signedUp ? "成功" : "失败"));
+
+        // 活动签到
+        system.signIn(activity, "student1");
+
+        // 活动评价
+        system.evaluateActivity(activity, "student1", "活动组织得很好");
+
+        // 社团负责人撰写活动总结
+        system.summarizeActivity(activity, "clubLeader", "活动圆满成功，达到预期效果");
+
+        // 输出活动信息
+        System.out.println("活动主题: " + activity.getTheme());
+        System.out.println("活动时间: " + activity.getTime());
+        System.out.println("活动地点: " + activity.getLocation());
+        System.out.println("活动方案: " + activity.getPlan());
+        System.out.println("活动是否审核通过: " + activity.isApproved());
+        System.out.println("活动签到信息: " + system.getSignIns(activity));
+        System.out.println("活动评价信息: " + system.getEvaluations(activity));
+        System.out.println("活动总结信息: " + system.getSummary(activity));
+    }
+}    
